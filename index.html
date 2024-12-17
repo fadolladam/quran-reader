@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quran Reader - Right-to-Left Scroll</title>
+  <title>Quran Reader - Scroll Right to Left</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -27,31 +27,6 @@
       max-width: 700px;
       margin-left: 10px;
       position: relative;
-    }
-
-    /* Ayah Name and Juz Number */
-    .ayah-info {
-      position: absolute;
-      top: 10px;
-      left: 15px;
-      font-size: 1rem;
-      font-weight: bold;
-      color: #fff;
-      background-color: rgba(0, 128, 0, 0.8);
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
-
-    .juz-info {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 1rem;
-      font-weight: bold;
-      color: #fff;
-      background-color: rgba(0, 128, 0, 0.8);
-      padding: 4px 8px;
-      border-radius: 4px;
     }
 
     /* Page Number */
@@ -86,8 +61,6 @@
   <!-- Script -->
   <script>
     const totalPages = 604; // Total Quran pages
-    const surahNames = ["Al-Fatihah", "Al-Baqarah", "Al-Imran", "An-Nisa"]; // Example Surah names
-    const juzNumbers = [1, 2, 3, 4, 5]; // Example Juz numbers
     const quranPagesContainer = document.getElementById('quranPages');
 
     // Load Quran pages dynamically
@@ -99,16 +72,6 @@
         // Page Container
         const pageContainer = document.createElement('div');
         pageContainer.className = "quran-page";
-
-        // Ayah Name
-        const ayahInfo = document.createElement('div');
-        ayahInfo.className = "ayah-info";
-        ayahInfo.innerText = `Surah: ${surahNames[i % surahNames.length]}`; // Example dynamic Surah name
-
-        // Juz Number
-        const juzInfo = document.createElement('div');
-        juzInfo.className = "juz-info";
-        juzInfo.innerText = `Juz: ${juzNumbers[Math.floor(i / 20) % juzNumbers.length]}`; // Example dynamic Juz number
 
         // Image
         const img = document.createElement('img');
@@ -122,8 +85,6 @@
         pageNumber.innerText = `Page ${i}`;
 
         // Append Elements
-        pageContainer.appendChild(ayahInfo);
-        pageContainer.appendChild(juzInfo);
         pageContainer.appendChild(img);
         pageContainer.appendChild(pageNumber);
 
