@@ -7,29 +7,34 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Smooth scrolling effect */
-    html {
-      scroll-behavior: smooth;
-    }
+    html { scroll-behavior: smooth; }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
   <!-- Header -->
   <header class="text-center py-6 bg-green-700 text-white shadow-md">
-    <h1 class="text-3xl font-bold">Quran Reader</h1>
+    <h1 class="text-3xl font-bold">Quran Reader - Mushaf Madinah</h1>
+    <p class="mt-2 text-lg">Navigate through the pages of the Holy Quran</p>
   </header>
+
+  <!-- Search Bar (Hidden on Mobile) -->
+  <div class="hidden md:block text-center mt-4">
+    <input type="text" 
+           placeholder="Search Surah or Ayah..." 
+           class="w-2/3 px-4 py-2 border rounded-md shadow focus:ring-2 focus:ring-green-500">
+  </div>
 
   <!-- Main Section -->
   <main class="flex flex-col items-center mt-6 px-4">
     <!-- Navigation Controls -->
     <div class="flex justify-between items-center w-full max-w-lg mb-4">
-      <button id="nextPage" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-800 transition">
-        ⬅️ Next Page
+      <button id="prevPage" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-800 transition">
+        ⬅️ Previous Page
       </button>
       <span id="pageNumber" class="text-xl font-semibold">Page 1</span>
-      <button id="prevPage" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-800 transition">
-         Previous Page ➡️
+      <button id="nextPage" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-800 transition">
+        Next Page ➡️
       </button>
     </div>
 
@@ -76,11 +81,9 @@
     });
 
     function updatePage() {
-      // Dynamically update the image source
       const pageString = String(currentPage).padStart(3, '0'); // Format to page001, page002, etc.
       quranPage.src = `https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page${pageString}.png`;
 
-      // Update page number and progress
       pageNumber.textContent = `Page ${currentPage}`;
       progress.textContent = currentPage;
     }
