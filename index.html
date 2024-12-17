@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quran Reader - Mushaf Madinah</title>
+  <title>Quran Reader - Scrollable Pages</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -14,80 +14,82 @@
 
   <!-- Header -->
   <header class="text-center py-6 bg-green-700 text-white shadow-md">
-    <h1 class="text-3xl font-bold">Quran Reader - Mushaf Madinah</h1>
-    <p class="mt-2 text-lg">Navigate through the pages of the Holy Quran</p>
+    <h1 class="text-3xl font-bold">Quran Reader - Scrollable Pages</h1>
+    <p class="mt-2 text-lg">Scroll to navigate through the Quran pages</p>
   </header>
 
-  <!-- Search Bar (Hidden on Mobile) -->
-  <div class="hidden md:block text-center mt-4">
-    <input type="text" 
-           placeholder="Search Surah or Ayah..." 
-           class="w-2/3 px-4 py-2 border rounded-md shadow focus:ring-2 focus:ring-green-500">
-  </div>
+  <!-- Main Content -->
+  <main class="flex flex-col items-center mt-4 px-4">
+    <!-- Download Button -->
+    <button id="downloadButton" class="px-4 py-2 bg-green-600 text-white rounded shadow mb-4 hover:bg-green-800 transition">
+      Download Current Page
+    </button>
 
-  <!-- Main Section -->
-  <main class="flex flex-col items-center mt-6 px-4">
-    <!-- Navigation Controls -->
-    <div class="flex justify-between items-center w-full max-w-lg mb-4">
-      <button id="prevPage" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-800 transition">
-        ⬅️ Previous Page
-      </button>
-      <span id="pageNumber" class="text-xl font-semibold">Page 1</span>
-      <button id="nextPage" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-800 transition">
-        Next Page ➡️
-      </button>
-    </div>
-
-    <!-- Quran Page Display -->
-    <div class="w-full max-w-2xl">
-      <img id="quranPage" 
-           src="https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page001.png" 
-           alt="Quran Page"
-           class="w-full rounded-lg shadow-lg border-2 border-gray-300">
-    </div>
-
-    <!-- Page Progress -->
-    <div class="mt-4 text-center">
-      <p>Progress: <span id="progress">1</span> / 604</p>
+    <!-- Scrollable Quran Pages -->
+    <div id="quranPages" class="w-full max-w-2xl">
+      <!-- Images will be dynamically loaded here -->
     </div>
   </main>
 
   <!-- Footer -->
   <footer class="text-center py-4 mt-8 bg-gray-800 text-white shadow-inner">
-    <p>Made with ❤️ for Muslims Worldwide | Quran Reader</p>
+    <p>Made with ❤️ for Muslims Worldwide | Scrollable Quran Reader</p>
   </footer>
 
   <!-- Script -->
   <script>
+    const totalPages = 10; // Set to 604 for full Quran (use smaller for testing)
+    const quranPagesContainer = document.getElementById('quranPages');
+    const downloadButton = document.getElementById('downloadButton');
+
     let currentPage = 1;
-    const totalPages = 604;
 
-    const quranPage = document.getElementById('quranPage');
-    const pageNumber = document.getElementById('pageNumber');
-    const progress = document.getElementById('progress');
+    // Dynamically load Quran pages into the scrollable container
+    function loadQuranPages() {
+      for (let i = 1; i <= totalPages; i++) {
+        const pageString = String(i).padStart(3, '0');
+        const pageSrc = `https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page${pageString}.png`;
 
-    document.getElementById('prevPage').addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage--;
-        updatePage();
+        // Create Image Element
+        const img = document.createElement('img');
+        img.src = pageSrc;
+        img.alt = `Quran Page ${i}`;
+        img.className = "w-full rounded-lg shadow-lg border mb-6";
+
+        // Add Scroll ID to first page
+        if (i === 1) img.id = "page1";
+
+        quranPagesContainer.appendChild(img);
       }
-    });
-
-    document.getElementById('nextPage').addEventListener('click', () => {
-      if (currentPage < totalPages) {
-        currentPage++;
-        updatePage();
-      }
-    });
-
-    function updatePage() {
-      const pageString = String(currentPage).padStart(3, '0'); // Format to page001, page002, etc.
-      quranPage.src = `https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page${pageString}.png`;
-
-      pageNumber.textContent = `Page ${currentPage}`;
-      progress.textContent = currentPage;
     }
-  </script>
 
+    // Scroll to Page 1 on Mobile View
+    if (window.innerWidth < 768) {
+      window.onload = () => {
+        document.getElementById('page1').scrollIntoView();
+      };
+    }
+
+    // Download Current Page
+    downloadButton.addEventListener('click', () => {
+      const pageString = String(currentPage).padStart(3, '0');
+      const imageUrl = `https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page${pageString}.png`;
+
+      fetch(imageUrl)
+        .then(response => response.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(new Blob([blob]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `quran_page_${pageString}.png`);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+        });
+    });
+
+    // Initialize Page Load
+    loadQuranPages();
+  </script>
 </body>
 </html>
