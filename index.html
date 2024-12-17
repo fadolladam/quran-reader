@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quran Reader - Mushaf Madinah</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Smooth scrolling effect */
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+  <!-- Header -->
+  <header class="text-center py-6 bg-green-700 text-white shadow-md">
+    <h1 class="text-3xl font-bold">Quran Reader</h1>
+  </header>
+
+  <!-- Main Section -->
+  <main class="flex flex-col items-center mt-6 px-4">
+    <!-- Navigation Controls -->
+    <div class="flex justify-between items-center w-full max-w-lg mb-4">
+      <button id="nextPage" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-800 transition">
+        ⬅️ Next Page
+      </button>
+      <span id="pageNumber" class="text-xl font-semibold">Page 1</span>
+      <button id="prevPage" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-800 transition">
+         Previous Page ➡️
+      </button>
+    </div>
+
+    <!-- Quran Page Display -->
+    <div class="w-full max-w-2xl">
+      <img id="quranPage" 
+           src="https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page001.png" 
+           alt="Quran Page"
+           class="w-full rounded-lg shadow-lg border-2 border-gray-300">
+    </div>
+
+    <!-- Page Progress -->
+    <div class="mt-4 text-center">
+      <p>Progress: <span id="progress">1</span> / 604</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-4 mt-8 bg-gray-800 text-white shadow-inner">
+    <p>Made with ❤️ for Muslims Worldwide | Quran Reader</p>
+  </footer>
+
+  <!-- Script -->
+  <script>
+    let currentPage = 1;
+    const totalPages = 604;
+
+    const quranPage = document.getElementById('quranPage');
+    const pageNumber = document.getElementById('pageNumber');
+    const progress = document.getElementById('progress');
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        updatePage();
+      }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        updatePage();
+      }
+    });
+
+    function updatePage() {
+      // Dynamically update the image source
+      const pageString = String(currentPage).padStart(3, '0'); // Format to page001, page002, etc.
+      quranPage.src = `https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page${pageString}.png`;
+
+      // Update page number and progress
+      pageNumber.textContent = `Page ${currentPage}`;
+      progress.textContent = currentPage;
+    }
+  </script>
+
+</body>
+</html>
