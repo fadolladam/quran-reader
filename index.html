@@ -3,27 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quran Reader - Horizontal Scroll</title>
+  <title>Quran Reader - Scroll Right to Left</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    html { scroll-behavior: smooth; }
-    /* Smooth horizontal scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+    /* Scroll Container: Horizontal with RTL */
     .scroll-container {
       display: flex;
       overflow-x: auto;
+      flex-direction: row-reverse; /* Scroll Right-to-Left */
       scroll-snap-type: x mandatory;
     }
-
+    /* Individual Pages */
     .quran-page {
       scroll-snap-align: center;
       flex: 0 0 auto;
       width: 100%;
-      max-width: 700px; /* Adjust as needed */
-      margin-right: 10px; /* Space between pages */
+      max-width: 700px; /* Adjust page width */
+      margin-left: 10px; /* Spacing between pages */
     }
-
-    /* Hide scrollbar for mobile aesthetics */
+    /* Hide scrollbar */
     .scroll-container::-webkit-scrollbar {
       display: none;
     }
@@ -33,42 +35,32 @@
 
   <!-- Header -->
   <header class="text-center py-6 bg-green-700 text-white shadow-md">
-    <h1 class="text-3xl font-bold">Quran Reader - Horizontal Scroll</h1>
-    <p class="mt-2 text-lg">Swipe left or right to navigate through Quran pages</p>
+    <h1 class="text-3xl font-bold">Quran Reader</h1>
+    <p class="mt-2 text-lg">Scroll horizontally (Right to Left) to navigate Quran pages</p>
   </header>
 
   <!-- Main Content -->
   <main class="mt-4 px-4">
-    <!-- Download Button -->
-    <div class="flex justify-center mb-4">
-      <button id="downloadButton" class="px-4 py-2 bg-green-600 text-white rounded shadow hover:bg-green-800 transition">
-        Download Current Page
-      </button>
-    </div>
-
-    <!-- Horizontal Scrollable Quran Pages -->
+    <!-- Scrollable Quran Pages -->
     <div id="quranPages" class="scroll-container">
-      <!-- Pages will be dynamically added here -->
+      <!-- Quran pages will load dynamically -->
     </div>
   </main>
 
   <!-- Footer -->
   <footer class="text-center py-4 mt-8 bg-gray-800 text-white shadow-inner">
-    <p>Made with ❤️ for Muslims Worldwide | Horizontal Quran Reader</p>
+    <p>Made with ❤️ for Muslims Worldwide | Right-to-Left Scroll</p>
   </footer>
 
   <!-- Script -->
   <script>
-    const totalPages = 10; // Set to 604 for full Quran
+    const totalPages = 604; // Set to full Quran
     const quranPagesContainer = document.getElementById('quranPages');
-    const downloadButton = document.getElementById('downloadButton');
 
-    let currentPage = 1;
-
-    // Dynamically load Quran pages into the horizontal scrollable container
+    // Dynamically load Quran pages
     function loadQuranPages() {
       for (let i = 1; i <= totalPages; i++) {
-        const pageString = String(i).padStart(3, '0');
+        const pageString = String(i).padStart(3, '0'); // Format: 001, 002, etc.
         const pageSrc = `https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page${pageString}.png`;
 
         // Create Image Element
@@ -77,38 +69,11 @@
         img.alt = `Quran Page ${i}`;
         img.className = "quran-page rounded-lg shadow-lg border";
 
-        img.dataset.page = i; // Add page number for download reference
         quranPagesContainer.appendChild(img);
       }
     }
 
-    // Download the currently visible page
-    downloadButton.addEventListener('click', () => {
-      const visiblePages = document.querySelectorAll('.quran-page');
-      const currentVisiblePage = visiblePages[currentPage - 1];
-      const imageUrl = currentVisiblePage.src;
-
-      fetch(imageUrl)
-        .then(response => response.blob())
-        .then(blob => {
-          const url = window.URL.createObjectURL(new Blob([blob]));
-          const link = document.createElement('a');
-          link.href = url;
-          link.setAttribute('download', `quran_page_${String(currentPage).padStart(3, '0')}.png`);
-          document.body.appendChild(link);
-          link.click();
-          link.parentNode.removeChild(link);
-        });
-    });
-
-    // Listen for horizontal scroll to detect the current page
-    quranPagesContainer.addEventListener('scroll', () => {
-      const scrollPosition = quranPagesContainer.scrollLeft;
-      const pageWidth = quranPagesContainer.children[0].offsetWidth + 10; // Include margin
-      currentPage = Math.round(scrollPosition / pageWidth) + 1;
-    });
-
-    // Initialize Page Load
+    // Load all Quran pages on page load
     loadQuranPages();
   </script>
 
