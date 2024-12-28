@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quran Reader - Lazy Loading</title>
+  <title>Quran Reader - Lazy Loading with Preloading</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -111,19 +111,32 @@
       quranPagesContainer.appendChild(pageContainer);
     }
 
-    // Lazy loading images with IntersectionObserver
+    // Lazy loading images with preloading of 4 pages
     function setupLazyLoading() {
       const images = document.querySelectorAll('img[data-src]');
-      const observer = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const img = entry.target;
-            img.src = img.dataset.src; // Load the image
-            img.removeAttribute('data-src'); // Remove data-src attribute
-            observer.unobserve(img); // Stop observing the image
-          }
-        });
-      });
+      const observer = new IntersectionObserver(
+        (entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              // Get the currently visible page
+              const visibleImg = entry.target;
+              const currentPageIndex = Array.from(images).indexOf(visibleImg);
+
+              // Preload 4 pages (current + 3 nearby)
+              for (let i = currentPageIndex; i < Math.min(currentPageIndex + 4, images.length); i++) {
+                const img = images[i];
+                if (img.dataset.src) {
+                  img.src = img.dataset.src; // Load the image
+                  img.removeAttribute('data-src'); // Remove data-src attribute
+                }
+              }
+
+              observer.unobserve(visibleImg); // Stop observing the current image
+            }
+          });
+        },
+        { root: quranPagesContainer, threshold: 0.5 } // Trigger when 50% of the image is in view
+      );
 
       images.forEach(img => observer.observe(img));
     }
