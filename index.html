@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quran Reader - Arabic & Translation</title>
+  <title>Quran Reader - Lazy Loading</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -47,7 +47,7 @@
 
   <!-- Header -->
   <header class="text-center py-4 bg-green-700 text-white shadow-md">
-    <h1 class="text-2xl font-bold">Quran Muslim KH</h1>
+    <h1 class="text-2xl font-bold">Quran Reader - Lazy Loading</h1>
   </header>
 
   <!-- Main Content -->
@@ -71,28 +71,33 @@
         // Arabic Page
         addPage(
           `https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page${pageString}.png`,
-          `Page ${i} - Arabic`
+          `Page ${i} - Arabic`,
+          false // Lazy loading
         );
 
         // Translation Page
         addPage(
-          `images/page${pageString}.png`, // Translation images are now in the 'images/' folder
-          `Page ${i} - ​ បកប្រែជាភាសាខ្មែរ​ ដោយឯកឧត្តម​ ហ្សាការីយ៉ា​ អាដាម`
+          `images/page${pageString}.png`,
+          `Page ${i} - Translation`,
+          false // Lazy loading
         );
       }
     }
 
-    // Add a single page to the container
-    function addPage(src, label) {
+    // Add a single page to the container with lazy loading
+    function addPage(src, label, isVisible) {
       // Page Container
       const pageContainer = document.createElement('div');
       pageContainer.className = "quran-page";
 
-      // Image
+      // Image (lazy loaded)
       const img = document.createElement('img');
-      img.src = src;
+      img.dataset.src = src; // Store the image source in data-src for lazy loading
       img.alt = label;
       img.className = "w-full rounded-lg shadow-lg border";
+      if (isVisible) {
+        img.src = src; // Load immediately if visible
+      }
 
       // Page Number
       const pageNumber = document.createElement('div');
@@ -106,8 +111,26 @@
       quranPagesContainer.appendChild(pageContainer);
     }
 
-    // Initialize Pages
+    // Lazy loading images with IntersectionObserver
+    function setupLazyLoading() {
+      const images = document.querySelectorAll('img[data-src]');
+      const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src; // Load the image
+            img.removeAttribute('data-src'); // Remove data-src attribute
+            observer.unobserve(img); // Stop observing the image
+          }
+        });
+      });
+
+      images.forEach(img => observer.observe(img));
+    }
+
+    // Initialize Pages and Lazy Loading
     loadQuranPages();
+    setupLazyLoading();
   </script>
 </body>
 </html>
