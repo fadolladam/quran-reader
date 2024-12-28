@@ -2,10 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quran Reader - Lazy Loading with Preloading</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Quran Reader - Mobile App</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="icon.png">
   <style>
     html {
       scroll-behavior: smooth;
@@ -17,6 +21,7 @@
       overflow-x: auto;
       flex-direction: row-reverse; /* Right-to-left scrolling */
       scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch; /* Enable smooth scrolling for Safari */
     }
 
     /* Page Container */
@@ -41,13 +46,26 @@
     .scroll-container::-webkit-scrollbar {
       display: none;
     }
+
+    /* Fullscreen for iPhone when added to Home Screen */
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    main {
+      height: 100vh;
+      overflow: auto;
+    }
   </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
   <!-- Header -->
   <header class="text-center py-4 bg-green-700 text-white shadow-md">
-    <h1 class="text-2xl font-bold">Quran Reader - Lazy Loading</h1>
+    <h1 class="text-2xl font-bold">Quran Reader</h1>
   </header>
 
   <!-- Main Content -->
