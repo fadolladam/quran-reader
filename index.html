@@ -61,9 +61,10 @@
     <div id="app" class="h-screen w-screen grid md:grid-cols-[18rem_1fr] lg:grid-cols-[18rem_1fr_18rem] overflow-hidden">
         
         <!-- Left Sidebar: Surah List -->
-        <aside id="left-sidebar" class="bg-[var(--bg-sidebar)] h-full flex flex-col transition-transform duration-300 ease-in-out transform -translate-x-full md:translate-x-0 z-30 md:relative absolute w-72 md:w-auto">
-            <div class="p-4 border-b border-gray-200">
+        <aside id="left-sidebar" class="bg-[var(--bg-sidebar)] h-full flex flex-col transition-transform duration-300 ease-in-out transform -translate-x-full md:translate-x-0 z-40 fixed md:static w-72 md:w-auto">
+            <div class="p-4 border-b border-gray-200 flex items-center justify-between">
                 <h2 class="text-xl font-bold text-[var(--primary-color)]">The Holy Quran</h2>
+                <button id="sidebar-close-btn" class="md:hidden p-1 rounded-full hover:bg-gray-300"><i data-feather="x" class="w-5 h-5"></i></button>
             </div>
             <div id="surah-list" class="flex-1 overflow-y-auto p-2 space-y-1">
                 <!-- Loader -->
@@ -74,7 +75,7 @@
         <!-- Main Content -->
         <main class="flex-1 flex flex-col h-screen bg-[var(--bg-main)]">
             <!-- Header -->
-            <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3 flex items-center justify-between shadow-sm z-10">
+            <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3 flex items-center justify-between shadow-sm z-20 sticky top-0">
                 <div class="flex items-center gap-2">
                     <button id="menu-toggle" class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"><i data-feather="menu"></i></button>
                     <div id="surah-title-container">
@@ -89,33 +90,21 @@
             </header>
 
             <!-- Ayah/Mushaf Display Area -->
-            <div class="flex-1 overflow-y-auto">
+            <div class="flex-1 overflow-y-auto pb-20">
                 <div id="ayah-container" class="p-4 md:p-6 lg:p-8">
                     <div id="initial-message" class="text-center text-gray-500 mt-20"><p>Select a Surah from the list to begin reading.</p></div>
                 </div>
                 <div id="mushaf-container" class="hidden w-full h-full items-center bg-gray-200"></div>
             </div>
 
-            <!-- Audio Player -->
-            <footer class="bg-white border-t p-3 shadow-inner z-10">
-                <div class="max-w-4xl mx-auto flex items-center justify-between gap-4">
-                    <div class="flex items-center gap-4 flex-1">
-                        <button id="play-surah-button" class="bg-gray-200 p-2 rounded-full text-gray-600 hover:bg-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed" disabled><i data-feather="play"></i></button>
-                        <div id="now-playing" class="text-sm text-gray-600 flex-1 truncate">
-                            <p class="font-semibold truncate">No Audio Playing</p>
-                        </div>
-                    </div>
-                    <audio id="audio-player" class="hidden"></audio>
-                </div>
-            </footer>
         </main>
 
         <!-- Right Sidebar: Info & Settings -->
         <aside id="right-sidebar" class="bg-[var(--bg-sidebar)] h-full flex-col border-l border-gray-200 hidden lg:flex">
-             <div class="p-4 border-b border-gray-200">
+             <div class="p-4 border-b border-gray-200 sticky top-0 bg-[var(--bg-sidebar)]/80 backdrop-blur-sm">
                 <h2 class="text-lg font-bold text-gray-800">Settings</h2>
             </div>
-            <div class="p-4 space-y-4">
+            <div class="p-4 space-y-4 overflow-y-auto">
                 <div>
                     <label for="reciter-select" class="text-sm font-medium text-gray-700">Reciter</label>
                     <select id="reciter-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--primary-color)] focus:ring focus:ring-[var(--primary-color)] focus:ring-opacity-50 text-sm">
@@ -125,17 +114,30 @@
                         <option value="ar.suhaibwebb">Suhaib Webb (English)</option>
                     </select>
                 </div>
-            </div>
-             <div class="p-4 border-t border-gray-200 mt-4">
-                <h2 class="text-lg font-bold text-gray-800">Surah Info</h2>
-                <div id="right-surah-info" class="mt-2 text-sm text-gray-600 space-y-1">
-                    <p>Select a surah to see details.</p>
+                 <div class="pt-4 border-t border-gray-200">
+                    <h2 class="text-lg font-bold text-gray-800">Surah Info</h2>
+                    <div id="right-surah-info" class="mt-2 text-sm text-gray-600 space-y-1">
+                        <p>Select a surah to see details.</p>
+                    </div>
                 </div>
             </div>
         </aside>
+
+        <!-- Audio Player -->
+        <footer class="bg-white/80 backdrop-blur-sm border-t p-3 shadow-inner z-30 fixed bottom-0 left-0 right-0 md:left-72 lg:left-72 lg:right-72">
+            <div class="max-w-4xl mx-auto flex items-center justify-between gap-4">
+                <div class="flex items-center gap-4 flex-1">
+                    <button id="play-surah-button" class="bg-gray-200 p-2 rounded-full text-gray-600 hover:bg-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed" disabled><i data-feather="play"></i></button>
+                    <div id="now-playing" class="text-sm text-gray-600 flex-1 truncate">
+                        <p class="font-semibold truncate">No Audio Playing</p>
+                    </div>
+                </div>
+                <audio id="audio-player" class="hidden"></audio>
+            </div>
+        </footer>
     </div>
 
-    <div id="toast" class="fixed bottom-5 right-5 bg-gray-900 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-300">Copied to clipboard!</div>
+    <div id="toast" class="fixed bottom-20 right-5 bg-gray-900 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 z-50">Copied to clipboard!</div>
 
 
     <script>
@@ -156,6 +158,7 @@
                 playSurahButton: document.getElementById('play-surah-button'),
                 nowPlayingInfo: document.getElementById('now-playing').querySelector('p'),
                 menuToggle: document.getElementById('menu-toggle'),
+                sidebarCloseBtn: document.getElementById('sidebar-close-btn'),
                 viewToggleList: document.getElementById('view-toggle-list'),
                 viewToggleMushaf: document.getElementById('view-toggle-mushaf'),
                 footer: document.querySelector('footer'),
@@ -410,31 +413,23 @@
             dom.audioPlayer.addEventListener('ended', () => { if (state.isPlayingSurah) playNextAyah(); else { resetNowPlaying(); stopHighlighting(); }});
             dom.audioPlayer.addEventListener('pause', () => { dom.playSurahButton.innerHTML = `<i data-feather="play"></i>`; feather.replace(); });
             dom.audioPlayer.addEventListener('play', () => { dom.playSurahButton.innerHTML = `<i data-feather="pause"></i>`; feather.replace(); });
-            dom.menuToggle.addEventListener('click', () => dom.leftSidebar.classList.toggle('-translate-x-full'));
+            dom.menuToggle.addEventListener('click', () => dom.leftSidebar.classList.remove('-translate-x-full'));
+            dom.sidebarCloseBtn.addEventListener('click', () => dom.leftSidebar.classList.add('-translate-x-full'));
             dom.viewToggleList.addEventListener('click', () => toggleView('list'));
             dom.viewToggleMushaf.addEventListener('click', () => toggleView('mushaf'));
             
             dom.ayahContainer.addEventListener('click', e => {
                 const target = e.target;
-                
-                const playBtn = target.closest('.play-ayah-btn');
-                const copyBtn = target.closest('.copy-ayah-btn');
                 const ayahCard = target.closest('[data-ayah-num]');
-
                 if (!ayahCard) return;
 
-                // Priority: Handle specific button clicks first
-                if (playBtn) {
-                    playAyah(parseInt(playBtn.dataset.ayahNum), true);
-                    return; 
-                }
-                if (copyBtn) {
+                if (target.closest('.copy-ayah-btn')) {
+                    const copyBtn = target.closest('.copy-ayah-btn');
                     const textToCopy = `"${copyBtn.dataset.ayahText}"\n\n"${copyBtn.dataset.transText}"`;
                     navigator.clipboard.writeText(textToCopy).then(() => showToast('Ayah & Translation copied!'));
                     return; 
                 }
 
-                // If the card itself is clicked (and not a button), play the verse
                 playAyah(parseInt(ayahCard.dataset.ayahNum), true);
             });
             
