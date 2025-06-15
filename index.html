@@ -8,472 +8,440 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Google Fonts: Amiri for Arabic, Inter for English -->
+    <!-- Google Fonts: Noto Naskh Arabic for Quran, Inter for UI -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Feather Icons -->
     <script src="https://unpkg.com/feather-icons"></script>
 
     <style>
         /* Custom styles */
+        :root {
+            --bg-default: #f8f9fa;
+            --bg-main: #ffffff;
+            --bg-sidebar: #f1f2f4;
+            --text-default: #333333;
+            --text-secondary: #6c757d;
+            --primary-color: #2ca4ab;
+            --primary-color-light: #eaf6f6;
+        }
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
+            background-color: var(--bg-default);
+            color: var(--text-default);
         }
-        .arabic-text {
-            font-family: 'Amiri', serif;
-            line-height: 2.5;
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+        .quran-text {
+            font-family: 'Noto Naskh Arabic', serif;
+            line-height: 2.8;
+            font-size: 1.75rem;
+            direction: rtl;
         }
         .ayah-playing {
-            background-color: #e9f5e9;
-            color: #059669;
-            border-left: 4px solid #10b981;
+            background-color: var(--primary-color-light);
         }
         
-        /* Mushaf View Styles */
-        .mushaf-scroll-container {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
-        }
-        .mushaf-page {
-            scroll-snap-align: center;
-            flex: 0 0 100%;
-            padding: 0 1rem;
-        }
-        .mushaf-page img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin: 0 auto;
-            display: block;
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        /* Mushaf View (kept from previous version) */
+        .mushaf-scroll-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; direction: rtl; }
+        .mushaf-spread { scroll-snap-align: center; flex: 0 0 100%; display: flex; justify-content: center; align-items: center; gap: 1rem; padding: 1rem; box-sizing: border-box; }
+        .mushaf-page img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: block; }
+        @media (min-width: 768px) { .mushaf-page { width: 50%; } }
+        @media (max-width: 767px) { .mushaf-spread { flex-direction: column; } .mushaf-page { width: 90%; } }
     </style>
 </head>
 <body class="antialiased text-gray-800">
 
-    <div id="app" class="flex h-screen bg-gray-50 overflow-hidden">
-        <!-- Sidebar for Surah List -->
-        <aside id="sidebar" class="w-80 bg-white border-r border-gray-200 flex-shrink-0 h-full flex flex-col transition-transform duration-300 ease-in-out transform -translate-x-full md:translate-x-0 z-20">
-            <div class="p-4 border-b">
-                <h2 class="text-xl font-bold text-green-700">The Holy Quran</h2>
-                <p class="text-sm text-gray-500">Select a Surah to read</p>
+    <div id="app" class="h-screen w-screen grid md:grid-cols-[18rem_1fr] lg:grid-cols-[18rem_1fr_18rem] overflow-hidden">
+        
+        <!-- Left Sidebar: Surah List -->
+        <aside id="left-sidebar" class="bg-[var(--bg-sidebar)] h-full flex flex-col transition-transform duration-300 ease-in-out transform -translate-x-full md:translate-x-0 z-30 md:relative absolute w-72 md:w-auto">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-[var(--primary-color)]">The Holy Quran</h2>
             </div>
             <div id="surah-list" class="flex-1 overflow-y-auto p-2 space-y-1">
-                <!-- Surah list will be loaded here -->
-                <div class="text-center p-8">
-                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div>
-                    <p class="mt-4 text-gray-500">Loading Surahs...</p>
-                </div>
+                <!-- Loader -->
+                <div class="text-center p-8"><div class="animate-spin rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div><p class="mt-4 text-sm text-gray-500">Loading Surahs...</p></div>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col h-screen">
+        <main class="flex-1 flex flex-col h-screen bg-[var(--bg-main)]">
             <!-- Header -->
-            <header class="bg-white border-b border-gray-200 p-4 flex items-center justify-between shadow-sm">
-                <button id="menu-toggle" class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100">
-                    <i data-feather="menu"></i>
-                </button>
-                <div id="surah-title-container" class="text-center flex-1">
-                    <h1 id="surah-title" class="text-2xl font-bold text-gray-700">Select a Surah</h1>
-                    <p id="surah-info" class="text-sm text-gray-500"></p>
+            <header class="bg-white/80 backdrop-blur-sm border-b border-gray-200 p-3 flex items-center justify-between shadow-sm z-10">
+                <div class="flex items-center gap-2">
+                    <button id="menu-toggle" class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100"><i data-feather="menu"></i></button>
+                    <div id="surah-title-container">
+                        <h1 id="surah-title" class="text-lg font-bold text-gray-800">Select a Surah</h1>
+                        <p id="surah-info" class="text-xs text-gray-500"></p>
+                    </div>
                 </div>
-                <!-- View Toggle -->
-                <div class="flex items-center space-x-2 bg-gray-100 p-1 rounded-lg">
-                   <button id="view-toggle-list" class="px-3 py-1 text-sm font-medium rounded-md bg-white text-green-600 shadow-sm">List</button>
+                <div class="flex items-center space-x-1 bg-gray-100 p-1 rounded-lg">
+                   <button id="view-toggle-list" class="px-3 py-1 text-sm font-medium rounded-md bg-white text-[var(--primary-color)] shadow-sm">List</button>
                    <button id="view-toggle-mushaf" class="px-3 py-1 text-sm font-medium rounded-md text-gray-600">Mushaf</button>
                 </div>
             </header>
 
             <!-- Ayah/Mushaf Display Area -->
             <div class="flex-1 overflow-y-auto">
-                <div id="ayah-container" class="p-4 md:p-8 bg-gray-50">
-                    <div id="initial-message" class="text-center text-gray-500 mt-20">
-                        <p>Select a Surah from the list to begin reading.</p>
-                    </div>
+                <div id="ayah-container" class="p-4 md:p-6 lg:p-8">
+                    <div id="initial-message" class="text-center text-gray-500 mt-20"><p>Select a Surah from the list to begin reading.</p></div>
                 </div>
-                 <div id="mushaf-container" class="hidden w-full h-full flex items-center mushaf-scroll-container bg-gray-200">
-                    <!-- Mushaf pages will be loaded here -->
-                </div>
+                <div id="mushaf-container" class="hidden w-full h-full items-center bg-gray-200"></div>
             </div>
 
-            <!-- Audio Player & Controls -->
-            <footer class="bg-white border-t border-gray-200 p-4 shadow-inner">
-                <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div class="flex items-center space-x-4">
-                         <button id="play-surah-button" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:bg-gray-400 flex items-center space-x-2" disabled>
-                            <i data-feather="play"></i>
-                            <span id="play-surah-text">Play Surah</span>
-                        </button>
-                        <div id="now-playing" class="text-sm text-gray-600">
-                            <p class="font-semibold">No audio playing</p>
+            <!-- Audio Player -->
+            <footer class="bg-white border-t p-3 shadow-inner z-10">
+                <div class="max-w-4xl mx-auto flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-4 flex-1">
+                        <button id="play-surah-button" class="bg-gray-200 p-2 rounded-full text-gray-600 hover:bg-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed" disabled><i data-feather="play"></i></button>
+                        <div id="now-playing" class="text-sm text-gray-600 flex-1 truncate">
+                            <p class="font-semibold truncate">No Audio Playing</p>
                         </div>
                     </div>
-                   
-                    <div class="flex items-center space-x-2">
-                        <label for="reciter-select" class="text-sm font-medium text-gray-700">Reciter:</label>
-                        <select id="reciter-select" class="rounded-md border-gray-300 shadow-sm focus:border-green-300 focus:ring focus:ring-green-200 focus:ring-opacity-50 text-sm">
-                            <option value="ar.alafasy">Mishary Rashid Alafasy</option>
-                            <option value="ar.abdulbasitmurattal">Abdul Basit Murattal</option>
-                            <option value="ar.siddiquiminshawi">Siddiq Al-Minshawi</option>
-                            <option value="ar.suhaibwebb">Suhaib Webb (English)</option>
-                        </select>
-                    </div>
+                    <audio id="audio-player" class="hidden"></audio>
                 </div>
-                 <audio id="audio-player" class="hidden"></audio>
             </footer>
         </main>
+
+        <!-- Right Sidebar: Info & Settings -->
+        <aside id="right-sidebar" class="bg-[var(--bg-sidebar)] h-full flex-col border-l border-gray-200 hidden lg:flex">
+             <div class="p-4 border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800">Settings</h2>
+            </div>
+            <div class="p-4 space-y-4">
+                <div>
+                    <label for="reciter-select" class="text-sm font-medium text-gray-700">Reciter</label>
+                    <select id="reciter-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--primary-color)] focus:ring focus:ring-[var(--primary-color)] focus:ring-opacity-50 text-sm">
+                        <option value="ar.alafasy">Mishary Rashid Alafasy</option>
+                        <option value="ar.abdulbasitmurattal">Abdul Basit Murattal</option>
+                        <option value="ar.siddiquiminshawi">Siddiq Al-Minshawi</option>
+                        <option value="ar.suhaibwebb">Suhaib Webb (English)</option>
+                    </select>
+                </div>
+            </div>
+             <div class="p-4 border-t border-gray-200 mt-4">
+                <h2 class="text-lg font-bold text-gray-800">Surah Info</h2>
+                <div id="right-surah-info" class="mt-2 text-sm text-gray-600 space-y-1">
+                    <p>Select a surah to see details.</p>
+                </div>
+            </div>
+        </aside>
     </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-900 text-white py-2 px-4 rounded-lg shadow-lg opacity-0 transition-opacity duration-300">Copied to clipboard!</div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Elements ---
-            const surahListContainer = document.getElementById('surah-list');
-            const ayahContainer = document.getElementById('ayah-container');
-            const mushafContainer = document.getElementById('mushaf-container');
-            const surahTitle = document.getElementById('surah-title');
-            const surahInfo = document.getElementById('surah-info');
-            const initialMessage = document.getElementById('initial-message');
-            const audioPlayer = document.getElementById('audio-player');
-            const reciterSelect = document.getElementById('reciter-select');
-            const playSurahButton = document.getElementById('play-surah-button');
-            const nowPlayingInfo = document.getElementById('now-playing').querySelector('p');
-            const menuToggle = document.getElementById('menu-toggle');
-            const sidebar = document.getElementById('sidebar');
-            const viewToggleList = document.getElementById('view-toggle-list');
-            const viewToggleMushaf = document.getElementById('view-toggle-mushaf');
-            const footer = document.querySelector('footer');
+            const dom = {
+                leftSidebar: document.getElementById('left-sidebar'),
+                rightSidebar: document.getElementById('right-sidebar'),
+                surahList: document.getElementById('surah-list'),
+                ayahContainer: document.getElementById('ayah-container'),
+                mushafContainer: document.getElementById('mushaf-container'),
+                surahTitle: document.getElementById('surah-title'),
+                surahInfo: document.getElementById('surah-info'),
+                rightSurahInfo: document.getElementById('right-surah-info'),
+                initialMessage: document.getElementById('initial-message'),
+                audioPlayer: document.getElementById('audio-player'),
+                reciterSelect: document.getElementById('reciter-select'),
+                playSurahButton: document.getElementById('play-surah-button'),
+                nowPlayingInfo: document.getElementById('now-playing').querySelector('p'),
+                menuToggle: document.getElementById('menu-toggle'),
+                viewToggleList: document.getElementById('view-toggle-list'),
+                viewToggleMushaf: document.getElementById('view-toggle-mushaf'),
+                footer: document.querySelector('footer'),
+                toast: document.getElementById('toast'),
+            };
 
             // --- State ---
-            let currentSurahNumber = null;
-            let currentSurahData = null;
-            let isPlayingSurah = false;
-            let currentAyahIndex = 0;
-            let currentView = 'list'; // 'list' or 'mushaf'
+            let state = {
+                currentSurahNumber: null,
+                currentSurahData: null,
+                isPlayingSurah: false,
+                currentAyahIndex: 0,
+                currentView: 'list',
+                isMushafLoaded: false,
+            };
 
-            // --- API Base URL ---
             const API_BASE_URL = 'https://api.alquran.cloud/v1';
-            
-            // --- Fetch and Display Surah List ---
+
+            // --- Main Functions ---
             async function fetchSurahList() {
                 try {
                     const response = await fetch(`${API_BASE_URL}/surah`);
                     if (!response.ok) throw new Error('Network response was not ok');
                     const data = await response.json();
-                    
-                    surahListContainer.innerHTML = ''; // Clear loader
+                    dom.surahList.innerHTML = ''; // Clear loader
                     data.data.forEach(surah => {
                         const surahCard = document.createElement('div');
-                        surahCard.className = 'p-3 rounded-lg hover:bg-gray-100 cursor-pointer flex items-center justify-between';
+                        surahCard.className = 'p-3 rounded-lg hover:bg-gray-200 cursor-pointer flex items-center justify-between';
                         surahCard.dataset.surahNumber = surah.number;
-                        
                         surahCard.innerHTML = `
-                            <div class="flex items-center space-x-4">
-                                <span class="text-sm font-bold text-green-600 w-8 h-8 flex items-center justify-center bg-green-50 rounded-full">${surah.number}</span>
+                            <div class="flex items-center space-x-3">
+                                <span class="text-sm font-bold text-[var(--primary-color)] w-8 h-8 flex items-center justify-center bg-[var(--primary-color-light)] rounded-full">${surah.number}</span>
                                 <div>
                                     <p class="font-semibold text-gray-800">${surah.englishName}</p>
                                     <p class="text-xs text-gray-500">${surah.englishNameTranslation}</p>
                                 </div>
                             </div>
-                            <p class="text-lg arabic-text text-gray-600">${surah.name}</p>
+                            <p class="text-lg font-medium text-gray-600" style="font-family: 'Noto Naskh Arabic', serif;">${surah.name}</p>
                         `;
-                        
                         surahCard.addEventListener('click', () => {
                             fetchSurah(surah.number);
-                            if (window.innerWidth < 768) {
-                                sidebar.classList.add('-translate-x-full');
-                            }
+                            if (window.innerWidth < 768) dom.leftSidebar.classList.add('-translate-x-full');
                         });
-                        surahListContainer.appendChild(surahCard);
+                        dom.surahList.appendChild(surahCard);
                     });
                 } catch (error) {
-                    surahListContainer.innerHTML = '<p class="text-red-500 p-4">Failed to load Surahs. Please try again later.</p>';
-                    console.error("Error fetching Surah list:", error);
+                    dom.surahList.innerHTML = '<p class="text-red-500 p-4">Failed to load Surahs.</p>';
                 }
             }
             
-            // --- Fetch and Display a Single Surah ---
             async function fetchSurah(surahNumber) {
-                currentSurahNumber = surahNumber;
-                initialMessage.classList.add('hidden');
+                state.currentSurahNumber = surahNumber;
+                dom.initialMessage.classList.add('hidden');
                 stopPlayback();
                 
-                // Show loader based on view
-                if (currentView === 'list') {
-                     ayahContainer.innerHTML = `<div class="text-center p-8"><div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div><p class="mt-4 text-gray-500">Loading Surah ${surahNumber}...</p></div>`;
-                } else {
-                     mushafContainer.innerHTML = `<div class="text-center p-8 w-full"><div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div><p class="mt-4 text-gray-500">Loading Mushaf pages...</p></div>`;
-                }
+                if (state.currentView === 'mushaf') toggleView('list');
+                
+                dom.ayahContainer.innerHTML = `<div class="text-center p-8"><div class="animate-spin rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div><p class="mt-4 text-sm text-gray-500">Loading Surah ${surahNumber}...</p></div>`;
                
                 try {
-                    const reciter = reciterSelect.value;
+                    const reciter = dom.reciterSelect.value;
                     const response = await fetch(`${API_BASE_URL}/surah/${surahNumber}/editions/quran-uthmani,en.sahih,${reciter}`);
                     if (!response.ok) throw new Error('Network response was not ok');
                     const data = await response.json();
                     
-                    currentSurahData = data.data;
-                    renderContent();
-                    playSurahButton.disabled = false;
-                } catch (error) {
-                    ayahContainer.innerHTML = `<p class="text-red-500 text-center">Failed to load Surah. Please check your connection.</p>`;
-                    console.error(`Error fetching Surah ${surahNumber}:`, error);
-                    playSurahButton.disabled = true;
-                }
-            }
-
-            // --- Render Content based on View ---
-            function renderContent() {
-                if (!currentSurahData) return;
-                const quranData = currentSurahData[0];
-                surahTitle.textContent = `${quranData.englishName} - ${quranData.name}`;
-                surahInfo.textContent = `${quranData.revelationType} - ${quranData.numberOfAyahs} Ayahs`;
-
-                if (currentView === 'list') {
+                    state.currentSurahData = data.data;
                     renderListView();
-                } else {
-                    renderMushafView();
+                    updateRightSidebar();
+                    dom.playSurahButton.disabled = false;
+                } catch (error) {
+                    dom.ayahContainer.innerHTML = `<p class="text-red-500 text-center">Failed to load Surah.</p>`;
+                    dom.playSurahButton.disabled = true;
                 }
             }
-            
-            // --- Render List View ---
+
             function renderListView() {
-                const quranData = currentSurahData[0];
-                const translationData = currentSurahData[1];
+                if (!state.currentSurahData) return;
+                const [quranData, translationData] = state.currentSurahData;
+                dom.surahTitle.textContent = `${quranData.englishName}`;
+                dom.surahInfo.textContent = `${quranData.revelationType} - ${quranData.numberOfAyahs} Ayahs`;
                 
-                ayahContainer.innerHTML = '';
+                dom.ayahContainer.innerHTML = '';
                 if (quranData.number !== 1 && quranData.number !== 9) {
-                    const bismillah = document.createElement('div');
-                    bismillah.className = 'text-center py-6';
-                    bismillah.innerHTML = `<p class="text-2xl arabic-text">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p>`;
-                    ayahContainer.appendChild(bismillah);
+                    dom.ayahContainer.innerHTML += `<div class="text-center py-6"><p class="text-2xl" style="font-family: 'Noto Naskh Arabic', serif;">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</p></div>`;
                 }
                 
                 quranData.ayahs.forEach((ayah, index) => {
-                    const ayahDiv = document.createElement('div');
-                    ayahDiv.className = 'p-6 mb-4 bg-white rounded-xl shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer border-l-4 border-transparent';
-                    ayahDiv.id = `ayah-${ayah.numberInSurah}`;
-                    ayahDiv.dataset.ayahNumberInSurah = ayah.numberInSurah;
+                    const ayahCard = document.createElement('div');
+                    ayahCard.className = 'p-4 mb-4 rounded-lg transition-colors duration-300 border-b border-gray-100 cursor-pointer';
+                    ayahCard.id = `ayah-${ayah.numberInSurah}`;
+                    ayahCard.dataset.ayahNum = ayah.numberInSurah;
                     
-                    ayahDiv.innerHTML = `
-                        <div class="flex justify-between items-center mb-4">
-                            <span class="text-sm font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">${quranData.number}:${ayah.numberInSurah}</span>
+                    ayahCard.innerHTML = `
+                        <div class="flex items-start gap-4">
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-sm font-bold text-[var(--primary-color)]">${quranData.number}:${ayah.numberInSurah}</span>
+                                <button class="play-ayah-btn p-1 text-gray-500 hover:text-[var(--primary-color)]" data-ayah-num="${ayah.numberInSurah}"><i data-feather="play-circle" class="w-5 h-5"></i></button>
+                                <button class="copy-ayah-btn p-1 text-gray-500 hover:text-[var(--primary-color)]" data-ayah-text="${ayah.text}" data-trans-text="${translationData.ayahs[index].text}"><i data-feather="copy" class="w-5 h-5"></i></button>
+                            </div>
+                            <div class="flex-1">
+                                <p class="quran-text text-right text-gray-800 mb-4">${ayah.text}</p>
+                                <p class="text-gray-600 leading-relaxed text-sm">${translationData.ayahs[index].text}</p>
+                            </div>
                         </div>
-                        <p class="text-3xl arabic-text text-right leading-loose text-gray-800 mb-4">${ayah.text}</p>
-                        <p class="text-gray-600 leading-relaxed">${translationData.ayahs[index].text}</p>
                     `;
-
-                    ayahDiv.addEventListener('click', () => playAyah(ayah.numberInSurah, true));
-                    ayahContainer.appendChild(ayahDiv);
+                    dom.ayahContainer.appendChild(ayahCard);
                 });
+                feather.replace();
             }
 
-            // --- Render Mushaf View ---
             function renderMushafView() {
-                const ayahs = currentSurahData[0].ayahs;
-                const pages = [...new Set(ayahs.map(a => a.page))]; // Get unique page numbers
-                
-                mushafContainer.innerHTML = ''; // Clear previous pages
-                pages.forEach(pageNumber => {
-                    const pageDiv = document.createElement('div');
-                    pageDiv.className = 'mushaf-page';
-                    
-                    const img = document.createElement('img');
-                    const pageString = String(pageNumber).padStart(3, '0');
-                    img.src = `https://ia902709.us.archive.org/6/items/ALQURANPERPAGEFORMATPNG/page${pageString}.png`;
-                    img.alt = `Quran Page ${pageNumber}`;
-                    img.loading = 'lazy';
-
-                    pageDiv.appendChild(img);
-                    mushafContainer.appendChild(pageDiv);
-                });
+                if (state.isMushafLoaded) return;
+                dom.mushafContainer.innerHTML = `<div class="text-center p-8 w-full"><div class="animate-spin rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mx-auto"></div><p class="mt-4 text-sm text-gray-500">Loading Mushaf pages...</p></div>`;
+                setTimeout(() => {
+                    const totalPages = 604;
+                    dom.mushafContainer.innerHTML = '';
+                    const spread1 = document.createElement('div');
+                    spread1.className = 'mushaf-spread';
+                    spread1.innerHTML = `<div class="mushaf-page hidden md:block"></div><div class="mushaf-page"><img src="https://quran-images.vercel.app/images/1.png" alt="Quran Page 1" loading="lazy"><p class="text-center text-sm mt-2 text-gray-600">1</p></div>`;
+                    dom.mushafContainer.appendChild(spread1);
+                    for (let i = 2; i < totalPages; i += 2) {
+                        const spread = document.createElement('div');
+                        spread.className = 'mushaf-spread';
+                        spread.innerHTML = `<div class="mushaf-page"><img src="https://quran-images.vercel.app/images/${i + 1}.png" loading="lazy"><p class="text-center text-sm mt-2">${i+1}</p></div><div class="mushaf-page"><img src="https://quran-images.vercel.app/images/${i}.png" loading="lazy"><p class="text-center text-sm mt-2">${i}</p></div>`;
+                        dom.mushafContainer.appendChild(spread);
+                    }
+                    const spreadLast = document.createElement('div');
+                    spreadLast.className = 'mushaf-spread';
+                    spreadLast.innerHTML = `<div class="mushaf-page"><img src="https://quran-images.vercel.app/images/604.png" loading="lazy"><p class="text-center text-sm mt-2">604</p></div><div class="mushaf-page hidden md:block"></div>`;
+                    dom.mushafContainer.appendChild(spreadLast);
+                    state.isMushafLoaded = true;
+                }, 100);
             }
 
-            // --- Audio Playback Logic ---
-            function playAyah(ayahNumberInSurah, startContinuousPlay = false) {
-                if (!currentSurahData) return;
-
-                const audioData = currentSurahData[2];
-                const ayahIndex = audioData.ayahs.findIndex(a => a.numberInSurah === ayahNumberInSurah);
-
+            // --- Audio & UI Logic ---
+            function playAyah(ayahNumber, startContinuous = false) {
+                if (!state.currentSurahData) return;
+                const audioData = state.currentSurahData[2];
+                const ayahIndex = audioData.ayahs.findIndex(a => a.numberInSurah === ayahNumber);
                 if (ayahIndex === -1) return;
 
-                if (startContinuousPlay) {
+                if (startContinuous) {
                     stopPlayback();
-                    isPlayingSurah = true;
-                    currentAyahIndex = ayahIndex -1;
+                    state.isPlayingSurah = true;
+                    state.currentAyahIndex = ayahIndex - 1;
                     playNextAyah();
-                } else { // For single play or internal next play
+                } else {
                     const ayah = audioData.ayahs[ayahIndex];
-                    if (ayah && ayah.audio) {
-                        audioPlayer.src = ayah.audio;
-                        audioPlayer.play();
-                        updateNowPlaying(currentSurahData[0].englishName, ayah.numberInSurah);
-                        highlightPlayingAyah(ayah.numberInSurah);
-                    }
+                    dom.audioPlayer.src = ayah.audio;
+                    dom.audioPlayer.play();
+                    updateNowPlaying(state.currentSurahData[0].englishName, ayah.numberInSurah);
+                    highlightPlayingAyah(ayah.numberInSurah);
                 }
             }
             
             function playNextAyah() {
-                if (!isPlayingSurah || !currentSurahData) {
-                    stopPlayback();
-                    return;
-                }
-                
-                currentAyahIndex++;
-                const audioData = currentSurahData[2];
-                if (currentAyahIndex < audioData.ayahs.length) {
-                    const ayah = audioData.ayahs[currentAyahIndex];
+                if (!state.isPlayingSurah || !state.currentSurahData) return stopPlayback();
+                state.currentAyahIndex++;
+                const audioData = state.currentSurahData[2];
+                if (state.currentAyahIndex < audioData.ayahs.length) {
+                    const ayah = audioData.ayahs[state.currentAyahIndex];
                     playAyah(ayah.numberInSurah);
-                    if (currentView === 'list') {
-                        scrollToAyah(ayah.numberInSurah);
-                    }
+                    if (state.currentView === 'list') scrollToAyah(ayah.numberInSurah);
                 } else {
                     stopPlayback();
                 }
             }
 
-            // --- UI Updates & Controls ---
-            function highlightPlayingAyah(ayahNumberInSurah) {
-                if (currentView !== 'list') return;
-                document.querySelectorAll('.ayah-playing').forEach(el => el.classList.remove('ayah-playing', 'border-l-4', 'border-transparent'));
-                
-                const ayahEl = document.getElementById(`ayah-${ayahNumberInSurah}`);
-                if (ayahEl) {
-                    ayahEl.classList.add('ayah-playing');
-                }
-            }
-            
-            function stopHighlighting() {
-                document.querySelectorAll('.ayah-playing').forEach(el => el.classList.remove('ayah-playing', 'border-l-4', 'border-transparent'));
-            }
-
-            function updateNowPlaying(surahName, ayahNumber) {
-                nowPlayingInfo.textContent = `Playing: Surah ${surahName}, Ayah ${ayahNumber}`;
-            }
-
-            function resetNowPlaying() {
-                nowPlayingInfo.textContent = 'No audio playing';
-            }
-            
             function stopPlayback() {
-                isPlayingSurah = false;
-                audioPlayer.pause();
-                audioPlayer.currentTime = 0;
-                playSurahButton.innerHTML = `<i data-feather="play"></i> <span id="play-surah-text">Play Surah</span>`;
+                state.isPlayingSurah = false;
+                dom.audioPlayer.pause();
+                dom.audioPlayer.currentTime = 0;
+                dom.playSurahButton.innerHTML = `<i data-feather="play"></i>`;
                 feather.replace();
                 resetNowPlaying();
                 stopHighlighting();
             }
-
-            function scrollToAyah(ayahNumberInSurah) {
-                const ayahEl = document.getElementById(`ayah-${ayahNumberInSurah}`);
-                if (ayahEl) {
-                    ayahEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // --- UI Helpers ---
+            function updateRightSidebar() {
+                if (!state.currentSurahData) {
+                    dom.rightSurahInfo.innerHTML = '<p>Select a surah to see details.</p>';
+                    return;
                 }
+                const quranData = state.currentSurahData[0];
+                dom.rightSurahInfo.innerHTML = `
+                    <p><strong>Name:</strong> ${quranData.englishName}</p>
+                    <p><strong>Meaning:</strong> ${quranData.englishNameTranslation}</p>
+                    <p><strong>Verses:</strong> ${quranData.numberOfAyahs}</p>
+                    <p><strong>Revelation:</strong> ${quranData.revelationType}</p>
+                `;
             }
 
+            function highlightPlayingAyah(ayahNum) {
+                document.querySelectorAll('.ayah-playing').forEach(el => el.classList.remove('ayah-playing'));
+                const ayahEl = document.getElementById(`ayah-${ayahNum}`);
+                if (ayahEl) ayahEl.classList.add('ayah-playing');
+            }
+            function stopHighlighting() { document.querySelectorAll('.ayah-playing').forEach(el => el.classList.remove('ayah-playing')); }
+            function updateNowPlaying(surah, ayah) { dom.nowPlayingInfo.textContent = `Playing: Surah ${surah}, Ayah ${ayah}`; }
+            function resetNowPlaying() { dom.nowPlayingInfo.textContent = 'No audio playing'; }
+            function scrollToAyah(ayahNum) { const el = document.getElementById(`ayah-${ayahNum}`); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            function showToast(message) {
+                dom.toast.textContent = message;
+                dom.toast.classList.add('opacity-100');
+                setTimeout(() => dom.toast.classList.remove('opacity-100'), 2000);
+            }
             function toggleView(view) {
-                currentView = view;
+                if (state.currentView === view) return;
+                state.currentView = view;
                 stopPlayback();
-                
                 if (view === 'list') {
-                    ayahContainer.classList.remove('hidden');
-                    mushafContainer.classList.add('hidden');
-                    footer.classList.remove('hidden');
-
-                    viewToggleList.classList.add('bg-white', 'text-green-600', 'shadow-sm');
-                    viewToggleMushaf.classList.remove('bg-white', 'text-green-600', 'shadow-sm');
-
+                    dom.ayahContainer.classList.remove('hidden');
+                    dom.mushafContainer.classList.add('hidden');
+                    dom.footer.classList.remove('hidden');
+                    dom.rightSidebar.classList.remove('hidden', 'lg:flex');
+                    dom.rightSidebar.classList.add('lg:flex');
+                    dom.viewToggleList.classList.add('bg-white', 'text-[var(--primary-color)]', 'shadow-sm');
+                    dom.viewToggleMushaf.classList.remove('bg-white', 'text-[var(--primary-color)]', 'shadow-sm');
+                    if(state.currentSurahData) {
+                        const quranData = state.currentSurahData[0];
+                        dom.surahTitle.textContent = quranData.englishName;
+                        dom.surahInfo.textContent = `${quranData.revelationType} - ${quranData.numberOfAyahs} Ayahs`;
+                    }
                 } else { // mushaf
-                    ayahContainer.classList.add('hidden');
-                    mushafContainer.classList.remove('hidden');
-                    footer.classList.add('hidden'); // Hide controls in mushaf view
-                    
-                    viewToggleMushaf.classList.add('bg-white', 'text-green-600', 'shadow-sm');
-                    viewToggleList.classList.remove('bg-white', 'text-green-600', 'shadow-sm');
-                }
-                
-                // re-render if a surah is already loaded
-                if (currentSurahData) {
-                    renderContent();
+                    dom.ayahContainer.classList.add('hidden');
+                    dom.mushafContainer.classList.remove('hidden');
+                    dom.mushafContainer.classList.add('flex');
+                    dom.footer.classList.add('hidden');
+                    dom.rightSidebar.classList.add('hidden');
+                    dom.rightSidebar.classList.remove('lg:flex');
+                    dom.viewToggleMushaf.classList.add('bg-white', 'text-[var(--primary-color)]', 'shadow-sm');
+                    dom.viewToggleList.classList.remove('bg-white', 'text-[var(--primary-color)]', 'shadow-sm');
+                    dom.surahTitle.textContent = 'Mushaf View';
+                    dom.surahInfo.textContent = 'Full Quran';
+                    renderMushafView();
                 }
             }
             
             // --- Event Listeners ---
-            reciterSelect.addEventListener('change', () => {
-                if (currentSurahNumber) fetchSurah(currentSurahNumber);
-            });
-
-            playSurahButton.addEventListener('click', () => {
-                if (!currentSurahData) return;
-
-                if (isPlayingSurah) {
-                    audioPlayer.pause();
-                    isPlayingSurah = false;
+            dom.reciterSelect.addEventListener('change', () => { if (state.currentSurahNumber && state.currentView === 'list') fetchSurah(state.currentSurahNumber); });
+            dom.playSurahButton.addEventListener('click', () => {
+                if (!state.currentSurahData) return;
+                if (dom.audioPlayer.paused) {
+                    state.isPlayingSurah = true;
+                    if (dom.audioPlayer.currentTime > 0) dom.audioPlayer.play();
+                    else playNextAyah();
                 } else {
-                    isPlayingSurah = true;
-                    if(audioPlayer.paused && audioPlayer.currentTime > 0){
-                         audioPlayer.play();
-                    } else {
-                         currentAyahIndex = -1;
-                         playNextAyah();
-                    }
+                    dom.audioPlayer.pause();
                 }
             });
+            dom.audioPlayer.addEventListener('ended', () => { if (state.isPlayingSurah) playNextAyah(); else { resetNowPlaying(); stopHighlighting(); }});
+            dom.audioPlayer.addEventListener('pause', () => { dom.playSurahButton.innerHTML = `<i data-feather="play"></i>`; feather.replace(); });
+            dom.audioPlayer.addEventListener('play', () => { dom.playSurahButton.innerHTML = `<i data-feather="pause"></i>`; feather.replace(); });
+            dom.menuToggle.addEventListener('click', () => dom.leftSidebar.classList.toggle('-translate-x-full'));
+            dom.viewToggleList.addEventListener('click', () => toggleView('list'));
+            dom.viewToggleMushaf.addEventListener('click', () => toggleView('mushaf'));
             
-            audioPlayer.addEventListener('ended', () => {
-                if (isPlayingSurah) {
-                    playNextAyah();
-                } else {
-                    resetNowPlaying();
-                    stopHighlighting();
-                }
-            });
+            dom.ayahContainer.addEventListener('click', e => {
+                const target = e.target;
+                
+                const playBtn = target.closest('.play-ayah-btn');
+                const copyBtn = target.closest('.copy-ayah-btn');
+                const ayahCard = target.closest('[data-ayah-num]');
 
-            audioPlayer.addEventListener('pause', () => {
-                if (isPlayingSurah) {
-                    playSurahButton.innerHTML = `<i data-feather="play"></i> <span id="play-surah-text">Resume</span>`;
-                    feather.replace();
-                }
-            });
+                if (!ayahCard) return;
 
-            audioPlayer.addEventListener('play', () => {
-                if (isPlayingSurah) {
-                    playSurahButton.innerHTML = `<i data-feather="pause"></i> <span id="play-surah-text">Pause</span>`;
-                    feather.replace();
+                // Priority: Handle specific button clicks first
+                if (playBtn) {
+                    playAyah(parseInt(playBtn.dataset.ayahNum), true);
+                    return; 
                 }
-            });
-            
-            menuToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
+                if (copyBtn) {
+                    const textToCopy = `"${copyBtn.dataset.ayahText}"\n\n"${copyBtn.dataset.transText}"`;
+                    navigator.clipboard.writeText(textToCopy).then(() => showToast('Ayah & Translation copied!'));
+                    return; 
+                }
 
-            viewToggleList.addEventListener('click', () => toggleView('list'));
-            viewToggleMushaf.addEventListener('click', () => toggleView('mushaf'));
+                // If the card itself is clicked (and not a button), play the verse
+                playAyah(parseInt(ayahCard.dataset.ayahNum), true);
+            });
             
             // --- Initial Load ---
             fetchSurahList();
             feather.replace();
+            updateRightSidebar();
         });
     </script>
 </body>
